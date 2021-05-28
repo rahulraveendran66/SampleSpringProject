@@ -53,7 +53,7 @@ public class EmployeeController {
 	}
 	
 	
-	//update employee
+	//update employee -here employees table will be updated
 	@PutMapping("employees/{id}")
 	public ResponseEntity<Employee> updateEmployee(@PathVariable(value = "id") Long employeeId,
 			@RequestBody Employee employeeDetails) throws ResourceNotFoundException{
