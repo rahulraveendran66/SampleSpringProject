@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.javaguides.springboot.exception.ResourceNotFoundException;
 import net.javaguides.springboot.model.Employee;
+import net.javaguides.springboot.model.PcDetails;
 import net.javaguides.springboot.repository.EmployeeRepository;
+import net.javaguides.springboot.repository.PcDetailsRepository;
 
 
 @RestController
@@ -26,6 +28,9 @@ public class EmployeeController {
 	
 	@Autowired 
 	private EmployeeRepository employeeRepository;
+	@Autowired 
+	private PcDetailsRepository pcdetailsRepository;
+	
 	
 	//get employee
 	@GetMapping("employees")
@@ -80,6 +85,90 @@ public class EmployeeController {
 		return response;
 		
 	}
+	
+	
+	//get Pcdetails
+	@GetMapping("pcDetails")
+	public List<PcDetails> getAllPcDetails() {
+		return this.pcdetailsRepository.findAll();
+	}
+	
+	//get pcdetails by id
+	
+	@GetMapping("/pcDetails/{id}")
+	public ResponseEntity<PcDetails> getPcDetailsById(@PathVariable(value = "id") Long pcdetailsId)
+			throws ResourceNotFoundException {
+		PcDetails pcdetails = pcdetailsRepository.findById(pcdetailsId)
+				.orElseThrow(() -> new ResourceNotFoundException("Pc Details not found for this id :: " + pcdetailsId));
+		return ResponseEntity.ok().body(pcdetails);
+	}
+	
+	//save pcdetails
+	@PostMapping("pcDetails")
+	public PcDetails createPcDetails(@RequestBody PcDetails pcdetails) {
+		return this.pcdetailsRepository.save(pcdetails);
+		
+	}
+	
+	//update pcdetails
+	@PutMapping("pcDetails/{id}")
+	public ResponseEntity<PcDetails> updatePcDetails(@PathVariable(value = "id") Long pcdetailsId,
+			@RequestBody PcDetails pcDetailsinformations) throws ResourceNotFoundException{
+		
+		PcDetails pcdetails = pcdetailsRepository.findById(pcdetailsId)
+				.orElseThrow(() -> new ResourceNotFoundException("Pc Details not found for this id :: " + pcdetailsId));
+		
+		pcdetails.setPcName(pcDetailsinformations.getPcName());
+		pcdetails.setPcUser(pcDetailsinformations.getPcUser());
+		
+		
+		
+		return ResponseEntity.ok(this.pcdetailsRepository.save(pcdetails));
+	}
+	
+	//delete pcdetails
+	@DeleteMapping("pcDetails/{id}")
+	public Map<String , Boolean> deletePcDetails(@PathVariable(value = "id") Long pcdetailsId) throws ResourceNotFoundException{
+		PcDetails pcdetails = pcdetailsRepository.findById(pcdetailsId)
+				.orElseThrow(() -> new ResourceNotFoundException("Pc Details not found for this id :: " + pcdetailsId));
+		
+		this.pcdetailsRepository.delete(pcdetails);
+		Map<String , Boolean> response = new HashMap<>();
+		response.put("deleted", Boolean.TRUE);
+		return response;
+		
+	}
+	
+	//assigning user
+	@PutMapping("pcDetails/assign/{eid}/{pid}")
+	public Map<String , Boolean> assignPcDetails(@PathVariable(value="eid") Long employeeId , @PathVariable(value="pid") Long pcdetailsId) throws ResourceNotFoundException{
+		PcDetails pcdetails = pcdetailsRepository.findById(pcdetailsId)
+				.orElseThrow(() -> new ResourceNotFoundException("Pc Details not found for this id :: " + pcdetailsId));
+		Employee employee = employeeRepository.findById(employeeId)
+		.orElseThrow(() -> new ResourceNotFoundException("Pc Details not found for this id :: " + pcdetailsId));
+		
+		pcdetails.setPcUser(employee);
+		this.pcdetailsRepository.save(pcdetails);
+		Map<String , Boolean> response = new HashMap<>();
+		response.put("connected", Boolean.TRUE);
+		return response;
+		
+	}
+	
+	//unassigning user
+	@PutMapping("pcDetails/unassign/{pid}")
+	public Map<String , Boolean> unassignPcDetails(@PathVariable(value="pid") Long pcdetailsId) throws ResourceNotFoundException{
+		PcDetails pcdetails = pcdetailsRepository.findById(pcdetailsId)
+				.orElseThrow(() -> new ResourceNotFoundException("Pc Details not found for this id :: " + pcdetailsId));
+		
+		
+		pcdetails.setPcUser(null);
+		this.pcdetailsRepository.save(pcdetails);
+		Map<String , Boolean> response = new HashMap<>();
+		response.put("connected", Boolean.TRUE);
+		return response;
+	}
+	
 	
 
 }
